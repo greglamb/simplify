@@ -1,11 +1,10 @@
-
 /* ==================================================
  * SIMPLIFY GMAIL
  * By Michael Leggett: leggett.org
  * Copyright (c) 2019 Michael Hart Leggett
- * More info: simpl.fyi/gmail
- * Code base: github.com/leggett/simplify/blob/master/gmail/
+ * Repo: github.com/leggett/simplify/blob/master/gmail/
  * License: github.com/leggett/simplify/blob/master/gmail/LICENSE
+ * More info: simpl.fyi
  */
 
 
@@ -17,29 +16,48 @@ var simplifyDebug = false;
 var htmlEl = document.documentElement;
 htmlEl.classList.add('simpl');
 
+// Toggles custom style and returns latest state
+function toggleSimpl() {
+	return htmlEl.classList.toggle('simpl');
+}
+
 // Add keyboard shortcut for toggling on/off custom style
-function toggleSimpl(event) {
+function handleToggleShortcut(event) {
 	// If Cmd+J was pressed, toggle simpl
 	if (event.metaKey && event.which == 74) {
-		htmlEl.classList.toggle('simpl');
+		toggleSimpl();
 		event.preventDefault();
 	}
 }
-window.addEventListener('keydown', toggleSimpl, false);
+window.addEventListener('keydown', handleToggleShortcut, false);
 
-/* Add simpl Toggle button
-window.addEventListener('load', function() {
-	var elem = document.createElement("div");
-	elem.id = 'simplToggle';
-	elem.addEventListener('click', toggleSimpl, false);
-	document.body.insertBefore(elem, document.body.childNodes[0]);
-}, false);
-*/
+// Handle messages from background script
+chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
+	if (message.action === 'toggle_simpl') {
+		const isNowToggled = toggleSimpl();
+		sendResponse({toggled: isNowToggled});
+	}
+});
 
-// Initialize saved states
+// Activate page action button
+chrome.runtime.sendMessage({action: 'activate_page_action'});
+
+
+
+// == INIT SAVED STATES =================================================
+
 if (window.localStorage.simplifyPreviewPane == "true") {
 	if (simplifyDebug) console.log('Loading with split view');
 	htmlEl.classList.add('splitView');
+} else {
+	// Multiple Inboxes only works if Preview Pane is disabled
+	if (window.localStorage.simplifyMultipleInboxes == "horizontal") {
+		if (simplifyDebug) console.log('Loading with side-by-side multiple inboxes');
+		htmlEl.classList.add('multiBoxHorz');
+	} else if (window.localStorage.simplifyMultipleInboxes == "vertical") {
+		if (simplifyDebug) console.log('Loading with vertically stacked multiple inboxes');
+		htmlEl.classList.add('multiBoxVert');
+	}
 }
 if (window.localStorage.simplifyLightTheme == "true") {
 	if (simplifyDebug) console.log('Loading with light theme');
@@ -55,18 +73,10 @@ if (window.localStorage.simplifyDensity == "low") {
 	if (simplifyDebug) console.log('Loading with high density inbox');
 	htmlEl.classList.add('highDensityInbox');
 }
-if (window.localStorage.simplifyMultipleInboxes == "horizontal") {
-	if (simplifyDebug) console.log('Loading with side-by-side multiple inboxes');
-	htmlEl.classList.add('multiBoxHorz');
-} else if (window.localStorage.simplifyMultipleInboxes == "vertical") {
-	if (simplifyDebug) console.log('Loading with vertically stacked multiple inboxes');
-	htmlEl.classList.add('multiBoxVert');
-}
 if (window.localStorage.simplifyRightSideChat == "true") {
 	if (simplifyDebug) console.log('Loading with right hand side chat');
 	htmlEl.classList.add('rhsChat');
 }
-
 
 // Hide Search box by default
 if (typeof window.localStorage.simplifyHideSearch === 'undefined') {
@@ -365,10 +375,18 @@ function detectSplitView() {
 				htmlEl.classList.add('splitView');
 				window.localStorage.simplifyPreviewPane = true;
 				/* TODO: Listen for splitview mode toggle via mutation observer */
+
+				// Multiple Inboxes only works when Split view is disabled
+				window.localStorage.simplifyMultipleInboxes = "none";
+				htmlEl.classList.remove('multiBoxVert');
+				htmlEl.classList.remove('multiBoxHorz');
 			} else {
 				if (simplifyDebug) console.log('No split view');
 				htmlEl.classList.remove('splitView');
 				window.localStorage.simplifyPreviewPane = false;
+
+				// Multiple Inboxes only works when Split view is disabled
+				detectMultipleInboxes();
 			}
 		} else {
 			detectSplitViewLoops++;
@@ -577,7 +595,6 @@ function initLate() {
 	detectSplitView();
 	detectDensity();
 	detectRightSideChat();
-	detectMultipleInboxes();
 	detectAddOns();
 	testPagination();
 	observePagination(); 

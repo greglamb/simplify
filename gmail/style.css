@@ -1,13 +1,12 @@
-
 /* ==================================================
  * SIMPLIFY GMAIL
  * By Michael Leggett: leggett.org
  * Copyright (c) 2019 Michael Hart Leggett
- * More info: simpl.fyi/gmail
- * Code base: github.com/leggett/simplify/blob/master/gmail/
+ * Repo: github.com/leggett/simplify/blob/master/gmail/
  * License: github.com/leggett/simplify/blob/master/gmail/LICENSE
- * Search for TODO and BUG 
+ * More info: simpl.fyi
  */
+
 
 
 /* ==================================================
@@ -15,13 +14,30 @@
  */
 
 
-/* INBOX */
-/* Change font in inbox 
-html.simpl div[role="main"] div.zt td, 
-html.simpl div[role="main"] div.zt td div {
-	font-family: 'Helvetica Neue', Helvetica, Roboto, RobotoDraft, Arial, sans-serif !important;
+/* TODO: At >= 1040px wide, align action bar to Inbox */
+/* BUG: calculations aren't right and only moves left side 
+@media only screen and (min-width: 1040px) {
+	html.simpl.hideSearch .aeH .G-atb {
+		margin-left: 196px !important;
+	}
+}
+@media only screen and (min-width: 1287px) {
+	html.simpl.hideSearch .aeH .G-atb {
+		margin-left: calc((100vw - 960px + 64px) / 2) !important;
+	}
+}
+@media only screen and (min-width: 1450px) {
+	html.simpl.hideSearch .aeH .G-atb {
+		margin-left: calc((100vw - 1100px + 64px) / 2) !important;
+	}
+}
+@media only screen and (min-width: 1600px) {
+	html.simpl .aeH .G-atb {
+		margin-left: calc((100vw - 1100px + 64px) / 2) !important;
+	}
 }
 */
+
 
 /* Move stars to right side * /
 .zA .apU {
@@ -154,32 +170,6 @@ html.simpl.hideSearch .aeH {
 	width: calc(100vw - 172px);
 }
 
-/* TODO: At >= 1040px wide, align action bar to Inbox */
-/* BUG: calculations aren't right and only moves left side 
-@media only screen and (min-width: 1040px) {
-	html.simpl.hideSearch .aeH .G-atb {
-		margin-left: 196px !important;
-	}
-}
-@media only screen and (min-width: 1287px) {
-	html.simpl.hideSearch .aeH .G-atb {
-		margin-left: calc((100vw - 960px + 64px) / 2) !important;
-	}
-}
-@media only screen and (min-width: 1450px) {
-	html.simpl.hideSearch .aeH .G-atb {
-		margin-left: calc((100vw - 1100px + 64px) / 2) !important;
-	}
-}
-@media only screen and (min-width: 1600px) {
-	html.simpl .aeH .G-atb {
-		margin-left: calc((100vw - 1100px + 64px) / 2) !important;
-	}
-}
-*/
-
-
-
 /* Dim pagination controls unless hovered over */
 /* BUG: the pagination controls are on each section in Priority Inbox */
 html.simpl .aeH .G-atb .aqJ,
@@ -250,6 +240,12 @@ html.simpl .aqJ .bvX,
 html.simpl .adF .bvX {
 	margin-right: 16px !important;
 }
+
+/* Hide the Offline icon */
+html.simpl .bvE {
+	display: none;
+}
+
 
 
 
@@ -543,6 +539,15 @@ html.simpl.splitView .G-atb[gh="tm"]:before {
 	-webkit-box-shadow: none;
 }
 
+/* If Multiple Inboxes AND Preview Pane are enabled,
+ * there will be multiple action bars; Multiple Inboxes
+ * only works when Preview Pane is disabled. So hide
+ * the other action bars if there are multiple
+ */
+html.simpl.splitView .G-atb[gh="tm"]:not(:first-child) {
+	display: none;
+}
+
 /* Expand action bar when search is hidden */
 html.simpl.splitView.hideSearch .G-atb[gh="tm"] {
 	width: calc(100vw - 210px);
@@ -593,8 +598,13 @@ html.simpl.splitView .aiw {
 }
 
 /* Give view full height */
+/* BUG #114: we should only apply this to vertical split pane */
 html.simpl.splitView .apg .age {
+	/* Normally... */
 	height: calc(100vh - 64px);
+	
+	/* In default inbox, there are tabs */
+	/*height: calc(100vh - 119px);*/
 }
 
 /* Add padding to bottom of conversation view */
@@ -943,38 +953,4 @@ html.simpl.inSettings .aeH .f2 .fY {
 /* I'm not sure what element is for but it is ugly when using themes */
 html.simpl.inSettings .aeH .f2 .dJ {
 	display: none;
-}
-
-
-
-
-/* ================================================== 
- * SIMPL TOGGLE -- Currencly hidden
- */
-
-/* simpl Toggle button in bottom left corner */
-#simplToggle {
-	/* Hide simplToggle*/
-	display: none;
-
-	position: fixed;
-	bottom: 0;
-	right: 0;
-	z-index: 9999999999;
-	border-radius: 8px 0 0 0;
-	font-family: sans-serif;
-	font-size: 14px;
-	font-weight: bold;
-	background-color: rgba(0,0,0,0.3);
-	color: #f5f5f5;
-	line-height: .5em;
-	padding: 10px 8px 8px 10px;
-	cursor: pointer;
-	opacity: .5;
-}
-#simplToggle:before {
-	content: "π";
-}
-html.simpl #simplToggle {
-	opacity: 1;
 }
